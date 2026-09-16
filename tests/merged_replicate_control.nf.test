@@ -1,0 +1,33 @@
+nextflow_pipeline {
+
+    name "Test merged replicate analysis with a single-library control"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("single-library control runs merged-replicate peak calling") {
+
+        when {
+            params {
+                outdir                = "$outputDir"
+                input                 = "$projectDir/tests/data/samplesheet_singleton_control.csv"
+                with_control          = true
+                skip_preseq           = true
+                skip_picard_metrics   = true
+                skip_ataqv            = true
+                skip_igv              = true
+                skip_multiqc          = true
+                skip_plot_profile     = true
+                skip_plot_fingerprint = true
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert file("$outputDir/bwa/merged_replicate/macs3/broad_peak/SPT5_T0.mRp.clN_peaks.xls").exists() },
+                { assert file("$outputDir/bwa/merged_replicate/macs3/broad_peak/SPT5_T15.mRp.clN_peaks.xls").exists() },
+                { assert file("$outputDir/bwa/merged_replicate/macs3/broad_peak/consensus/consensus_peaks.mRp.clN.bed").exists() }
+            )
+        }
+    }
+}
