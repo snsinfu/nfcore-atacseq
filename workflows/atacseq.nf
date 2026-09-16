@@ -561,22 +561,32 @@ workflow ATACSEQ {
     ch_deseq2_clustering_replicate_multiqc              = channel.empty()
     if (!params.skip_merge_replicates) {
 
-        // Check if we have multiple replicates
+        // Group biological replicates by stripping _REP\d+ from meta.id. Keep the
+        // original metadata until grouping so control references can be inspected.
         MERGED_LIBRARY_FILTER_BAM
             .out
             .bam
             .map {
                 meta, bam ->
-                    def meta_clone = meta.clone()
-                    meta_clone.id = meta_clone.id - ~/_REP\d+$/
-                    meta_clone.control = meta_clone.control ? meta_clone.control - ~/_REP\d+$/ : ""
-                    [ meta_clone.id, meta_clone, bam ]
+                    [ meta.id - ~/_REP\d+$/, meta, bam ]
             }
             .groupTuple()
             .map {
-                _id, metas, bams ->
+                base_id, metas, bams ->
                     if (bams.size() > 1) {
-                        return [ metas[0], bams ]
+                        def meta_clone = metas[0].clone()
+                        meta_clone.id = base_id
+                        if (meta_clone.control) {
+                            def unique_controls = metas.collect { m -> m.control }.unique()
+                            if (unique_controls.size() == 1) {
+                                // All replicates reference the same control replicate; it may not be merged.
+                                meta_clone.control = unique_controls[0]
+                            } else {
+                                // Replicates reference different control replicates; the control will be merged.
+                                meta_clone.control = unique_controls[0].replaceAll(/_REP\d+$/, '')
+                            }
+                        }
+                        return [ meta_clone, bams ]
                     }
             }
             .set { ch_merged_library_replicate_bam }
@@ -646,7 +656,11 @@ workflow ATACSEQ {
         }
         // Create channels: [ meta, bam, ([] for control_bam) ]
         if (params.with_control) {
+            // Control pool: merged-replicate controls (samples with >1 library)
+            // plus individual merged-library controls, so controls with a single
+            // library are available for pairing.
             ch_merged_replicate_markduplicate_bam
+                .mix(ch_merged_library_filter_bam)
                 .map {
                     meta, bam ->
                         meta.control ? null : [ meta.id, bam ]
