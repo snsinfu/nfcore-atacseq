@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[PR #454](https://github.com/nf-core/atacseq/pull/454)] - Sort the peak QC plot inputs by file name so that `PLOT_MACS3_QC` and `PLOT_HOMER_ANNOTATEPEAKS` outputs no longer depend on task completion order.
 - Fix `--with_control` silently skipping merged-replicate peak calling when a treatment sample has multiple libraries but its control sample has a single library.
 - [[#327](https://github.com/nf-core/atacseq/issues/327)] - Fix `--shift_reads` silently skipping peak calling and all downstream steps when `SAMTOOLS_INDEX` is run with `-c` to produce `.csi` indices.
+- Fix `PLOT_HOMER_ANNOTATEPEAKS` crashing when HOMER returns no feature annotation (all-`NA` `Annotation` column), e.g. with minimal GTFs.
 
 ### Parameters
 

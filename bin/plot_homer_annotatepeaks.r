@@ -64,8 +64,14 @@ for (idx in 1:length(HomerFiles)) {
     unassigned <- which(is.na(as.character(anno.dat$Distance.to.TSS)))
     anno.dat$Distance.to.TSS[unassigned] <- 1000000
 
+    ## Minimal GTFs (e.g. without feature/gene_type attributes) can make HOMER
+    ## return NA for every Annotation entry even when a nearest gene/distance is
+    ## present. table() drops NA by default, so an all-NA column yields an empty
+    ## count table and the colnames() assignment below fails. Treat them as
+    ## Unassigned.
     anno.dat$Annotation <- as.character(anno.dat$Annotation)
     anno.dat$Annotation[unassigned] <- "Unassigned"
+    anno.dat$Annotation[is.na(anno.dat$Annotation)] <- "Unassigned"
     anno.dat$Annotation <- as.factor(anno.dat$Annotation)
 
     anno.dat$Nearest.PromoterID <- as.character(anno.dat$Nearest.PromoterID)
