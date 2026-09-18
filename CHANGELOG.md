@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[PR #453](https://github.com/nf-core/atacseq/pull/453)] - Updated pipeline template to [nf-core/tools 4.0.3](https://github.com/nf-core/tools/releases/tag/4.0.3)
 - [[PR #454](https://github.com/nf-core/atacseq/pull/454)] - Sort the peak QC plot inputs by file name so that `PLOT_MACS3_QC` and `PLOT_HOMER_ANNOTATEPEAKS` outputs no longer depend on task completion order.
 - Fix `--with_control` silently skipping merged-replicate peak calling when a treatment sample has multiple libraries but its control sample has a single library.
+- [[#327](https://github.com/nf-core/atacseq/issues/327)] - Fix `--shift_reads` silently skipping peak calling and all downstream steps when `SAMTOOLS_INDEX` is run with `-c` to produce `.csi` indices.
 
 ### Parameters
 

@@ -40,7 +40,17 @@ workflow BAM_SHIFT_READS {
     // Run samtools flagstat
     //
     SAMTOOLS_FLAGSTAT (
-        SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai, by: [0])
+        SAMTOOLS_SORT.out.bam
+            .join(SAMTOOLS_INDEX.out.bai, by: [0], remainder: true)
+            .join(SAMTOOLS_INDEX.out.csi, by: [0], remainder: true)
+            .map {
+                meta, bam, bai, csi ->
+                    if (bai) {
+                        [ meta, bam, bai ]
+                    } else {
+                        [ meta, bam, csi ]
+                    }
+            }
     )
     ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 

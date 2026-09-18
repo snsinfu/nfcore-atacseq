@@ -360,8 +360,21 @@ workflow ATACSEQ {
     ch_merged_library_filter_csi      = MERGED_LIBRARY_FILTER_BAM.out.csi
 
     if (params.shift_reads && params.aligner != 'chromap' ) {
+        ch_merged_library_filter_bam
+            .join(ch_merged_library_filter_bai, by: [0], remainder: true)
+            .join(ch_merged_library_filter_csi, by: [0], remainder: true)
+            .map {
+                meta, bam, bai, csi ->
+                    if (bai) {
+                        [ meta, bam, bai ]
+                    } else {
+                        [ meta, bam, csi ]
+                    }
+            }
+            .set { ch_merged_library_filter_bam_bai }
+
         MERGED_LIBRARY_BAM_SHIFT_READS (
-            ch_merged_library_filter_bam.join(ch_merged_library_filter_bai, by: [0]),
+            ch_merged_library_filter_bam_bai,
             ch_fasta
             .map { item ->
                 [ [:], item ]
@@ -629,8 +642,21 @@ workflow ATACSEQ {
         ch_merged_replicate_markduplicate_csi      = MERGED_REPLICATE_MARKDUPLICATES_PICARD.out.csi
 
         if (params.shift_reads && params.aligner != 'chromap' ) {
+            ch_merged_replicate_markduplicate_bam
+                .join(ch_merged_replicate_markduplicate_bai, by: [0], remainder: true)
+                .join(ch_merged_replicate_markduplicate_csi, by: [0], remainder: true)
+                .map {
+                    meta, bam, bai, csi ->
+                        if (bai) {
+                            [ meta, bam, bai ]
+                        } else {
+                            [ meta, bam, csi ]
+                        }
+                }
+                .set { ch_merged_replicate_markduplicate_bam_bai }
+
             MERGED_REPLICATE_BAM_SHIFT_READS (
-                ch_merged_replicate_markduplicate_bam.join(ch_merged_replicate_markduplicate_bai, by: [0]),
+                ch_merged_replicate_markduplicate_bam_bai,
                 ch_fasta
                 .map { item ->
                     [ [:], item ]
