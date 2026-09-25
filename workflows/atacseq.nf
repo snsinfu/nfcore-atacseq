@@ -576,16 +576,22 @@ workflow ATACSEQ {
 
         // Group biological replicates by stripping _REP\d+ from meta.id. Keep the
         // original metadata until grouping so control references can be inspected.
+        // Pair each unshifted library BAM with its shifted counterpart (identical
+        // when --shift_reads is not used): the unshifted BAM is merged into the
+        // replicate BAM, while the shifted BAM is used for read counting relative
+        // to the merged-replicate consensus peakset, consistent with
+        // merged-library counting when --shift_reads is set.
         MERGED_LIBRARY_FILTER_BAM
             .out
             .bam
+            .join(ch_merged_library_filter_bam, by: [0])
             .map {
-                meta, bam ->
-                    [ meta.id - ~/_REP\d+$/, meta, bam ]
+                meta, bam, shifted_bam ->
+                    [ meta.id - ~/_REP\d+$/, meta, bam, shifted_bam ]
             }
             .groupTuple()
             .map {
-                base_id, metas, bams ->
+                base_id, metas, bams, shifted_bams ->
                     if (bams.size() > 1) {
                         def meta_clone = metas[0].clone()
                         meta_clone.id = base_id
@@ -599,10 +605,18 @@ workflow ATACSEQ {
                                 meta_clone.control = unique_controls[0].replaceAll(/_REP\d+$/, '')
                             }
                         }
-                        return [ meta_clone, bams ]
+                        return [ meta_clone, bams, shifted_bams ]
                     }
             }
+            .set { ch_merged_library_replicate_bams }
+
+        ch_merged_library_replicate_bams
+            .map { meta, bams, _shifted_bams -> [ meta, bams ] }
             .set { ch_merged_library_replicate_bam }
+
+        ch_merged_library_replicate_bams
+            .map { meta, _bams, shifted_bams -> [ meta, shifted_bams ] }
+            .set { ch_merged_library_replicate_bam_counts }
 
         //
         // MODULE: Merge replicate BAM files
@@ -738,7 +752,7 @@ workflow ATACSEQ {
         if (!params.skip_consensus_peaks) {
             MERGED_REPLICATE_CONSENSUS_PEAKS (
                 MERGED_REPLICATE_CALL_ANNOTATE_PEAKS.out.peaks,
-                ch_merged_library_replicate_bam,
+                ch_merged_library_replicate_bam_counts,
                 ch_fasta,
                 ch_gtf,
                 ch_multiqc_merged_replicate_deseq2_pca_header,

@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[#327](https://github.com/nf-core/atacseq/issues/327)] - Fix `--shift_reads` silently skipping peak calling and all downstream steps when `SAMTOOLS_INDEX` is run with `-c` to produce `.csi` indices.
 - Fix `PLOT_HOMER_ANNOTATEPEAKS` crashing when HOMER returns no feature annotation (all-`NA` `Annotation` column), e.g. with minimal GTFs.
 - Fix fragment-length filtering (`--minFragmentLength`/`--maxFragmentLength`) not being applied to reads in the merged-replicate (`*.mRp`) shift step.
+- Fix merged-replicate shifted BAM being published to `merged_replicate/` instead of `merged_replicate/shifted_reads/` when `--shift_reads` and `--save_align_intermeds` are used.
+- Fix merged-replicate read counting to use the shifted merged-library BAMs when `--shift_reads` is used, consistent with merged-library-level counting, and correct the DESeq2 sample suffix for shifted BAM names.
 
 ### Parameters
 
