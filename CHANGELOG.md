@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `--with_control` silently skipping merged-replicate peak calling when a treatment sample has multiple libraries but its control sample has a single library.
 - [[#327](https://github.com/nf-core/atacseq/issues/327)] - Fix `--shift_reads` silently skipping peak calling and all downstream steps when `SAMTOOLS_INDEX` is run with `-c` to produce `.csi` indices.
 - Fix `PLOT_HOMER_ANNOTATEPEAKS` crashing when HOMER returns no feature annotation (all-`NA` `Annotation` column), e.g. with minimal GTFs.
+- Fix fragment-length filtering (`--minFragmentLength`/`--maxFragmentLength`) not being applied to reads in the merged-replicate (`*.mRp`) shift step.
 
 ### Parameters
 
