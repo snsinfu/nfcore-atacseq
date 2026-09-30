@@ -34,12 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix fragment-length filtering (`--minFragmentLength`/`--maxFragmentLength`) not being applied to reads in the merged-replicate (`*.mRp`) shift step.
 - Fix merged-replicate shifted BAM being published to `merged_replicate/` instead of `merged_replicate/shifted_reads/` when `--shift_reads` and `--save_align_intermeds` are used.
 - Fix merged-replicate read counting to use the shifted merged-library BAMs when `--shift_reads` is used, consistent with merged-library-level counting, and correct the DESeq2 sample suffix for shifted BAM names.
+- Added [`BWA-MEM2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA-MEM3`](https://github.com/fg-labs/bwa-mem3) as selectable aligners via `--aligner bwa-mem2` / `--aligner bwa-mem3`. Both use their own index format (`.0123`, `.bwt.2bit.64`), so a pre-built index can be supplied with `--bwamem2_index` / `--bwamem3_index` or built automatically from the FASTA. All BWA alignment modes (`bwa`, `bwa-mem2` and `bwa-mem3`) now run through a single `ALIGN_BWA` subworkflow, so results and output naming are consistent whichever aligner is selected. Inputs, outputs and the output directory layout are unchanged; for workflow-code users, the `FASTQ_ALIGN_BWA` subworkflow (and the nf-core `fastq_align_bwa` component) is replaced by `ALIGN_BWA`, which takes the aligner name as an input.
 
 ### Parameters
 
 | Old parameter | New parameter                    |
 | ------------- | -------------------------------- |
 |               | `--skip_merged_replicate_bigwig` |
+|               | `--bwamem2_index`                |
+|               | `--bwamem3_index`                |
 
 > **NB:** Parameter has been **updated** if both old and new parameter information is present.
 > **NB:** Parameter has been **added** if just the new parameter information is present.
@@ -53,6 +56,8 @@ Note, since the pipeline is now using Nextflow DSL2, each process will be run wi
 | ---------- | ----------- | ----------- |
 | `macs2`    | 2.2.7.1     |             |
 | `macs3`    |             | 3.0.1       |
+| `bwa-mem2` |             | 2.3         |
+| `bwa-mem3` |             | 0.8.0       |
 
 ## [[2.1.2](https://github.com/nf-core/atacseq/releases/tag/2.1.2)] - 2022-08-07
 
