@@ -16,8 +16,8 @@ workflow ALIGN_BWA {
     val_sort_bam // boolean: whether the aligner module sorts the output
 
     main:
-    ch_versions = Channel.empty()
-    ch_bam_orig = Channel.empty()
+    ch_versions = channel.empty()
+    ch_bam_orig = channel.empty()
 
     if (val_aligner == 'bwa') {
         BWA_MEM ( ch_reads, ch_index, ch_fasta, val_sort_bam )

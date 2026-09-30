@@ -14,6 +14,8 @@ include {
     UNTAR as UNTAR_BWA_INDEX
     UNTAR as UNTAR_BOWTIE2_INDEX
     UNTAR as UNTAR_CHROMAP_INDEX
+    UNTAR as UNTAR_BWAMEM2_INDEX
+    UNTAR as UNTAR_BWAMEM3_INDEX
     UNTAR as UNTAR_STAR_INDEX    } from '../../modules/nf-core/untar/main'
 
 include { GFFREAD              } from '../../modules/nf-core/gffread/main'
@@ -21,6 +23,8 @@ include { CUSTOM_GETCHROMSIZES } from '../../modules/nf-core/custom/getchromsize
 include { BWA_INDEX            } from '../../modules/nf-core/bwa/index/main'
 include { BOWTIE2_BUILD        } from '../../modules/nf-core/bowtie2/build/main'
 include { CHROMAP_INDEX        } from '../../modules/nf-core/chromap/index/main'
+include { BWAMEM2_INDEX        } from '../../modules/local/bwamem2_index'
+include { BWAMEM3_INDEX        } from '../../modules/local/bwamem3_index'
 include { KHMER_UNIQUEKMERS    } from '../../modules/nf-core/khmer/uniquekmers/main'
 
 include { STAR_GENOMEGENERATE      } from '../../modules/local/star_genomegenerate'
@@ -46,6 +50,8 @@ workflow PREPARE_GENOME {
     bowtie2_index      //    file: /path/to/bowtie2/index/
     chromap_index      //    file: /path/to/chromap/index/
     star_index         //    file: /path/to/star/index/
+    bwamem2_index      //    file: /path/to/bwamem2/index/
+    bwamem3_index      //    file: /path/to/bwamem3/index/
     macs_gsize         // integer: MACS3 genome size
     read_length        // integer: read length
 
@@ -184,6 +190,42 @@ workflow PREPARE_GENOME {
     }
 
     //
+    // Uncompress bwa-mem2 index or generate from scratch if required
+    //
+    ch_bwamem2_index = channel.empty()
+    if (prepare_tool_index == 'bwa-mem2') {
+        if (bwamem2_index) {
+            if (bwamem2_index.endsWith('.tar.gz')) {
+                ch_bwamem2_index = UNTAR_BWAMEM2_INDEX ( [ [:], bwamem2_index ] ).untar
+                ch_versions      = ch_versions.mix(UNTAR_BWAMEM2_INDEX.out.versions)
+            } else {
+                ch_bwamem2_index = [ [:], file(bwamem2_index, checkIfExists: true) ]
+            }
+        } else {
+            ch_bwamem2_index = BWAMEM2_INDEX ( ch_fasta.map { item -> [ [:], item ] } ).index
+            ch_versions      = ch_versions.mix(BWAMEM2_INDEX.out.versions)
+        }
+    }
+
+    //
+    // Uncompress bwa-mem3 index or generate from scratch if required
+    //
+    ch_bwamem3_index = channel.empty()
+    if (prepare_tool_index == 'bwa-mem3') {
+        if (bwamem3_index) {
+            if (bwamem3_index.endsWith('.tar.gz')) {
+                ch_bwamem3_index = UNTAR_BWAMEM3_INDEX ( [ [:], bwamem3_index ] ).untar
+                ch_versions      = ch_versions.mix(UNTAR_BWAMEM3_INDEX.out.versions)
+            } else {
+                ch_bwamem3_index = [ [:], file(bwamem3_index, checkIfExists: true) ]
+            }
+        } else {
+            ch_bwamem3_index = BWAMEM3_INDEX ( ch_fasta.map { item -> [ [:], item ] } ).index
+            ch_versions      = ch_versions.mix(BWAMEM3_INDEX.out.versions)
+        }
+    }
+
+    //
     // Uncompress Bowtie2 index or generate from scratch if required
     //
     ch_bowtie2_index = channel.empty()
@@ -262,6 +304,8 @@ workflow PREPARE_GENOME {
     bowtie2_index = ch_bowtie2_index              //    path: bowtie2/index/
     chromap_index = ch_chromap_index              //    path: genome.index
     star_index    = ch_star_index                 //    path: star/index/
+    bwamem2_index = ch_bwamem2_index              //    path: bwamem2/index/
+    bwamem3_index = ch_bwamem3_index              //    path: bwamem3/index/
     autosomes     = ch_genome_autosomes           //    path: *.autosomes.txt
     macs_gsize    = ch_macs_gsize                 // integer: MACS3 genome size
     versions      = ch_versions.ifEmpty(null)     // channel: [ versions.yml ]

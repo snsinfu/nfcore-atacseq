@@ -20,6 +20,8 @@ params.bwa_index     = getGenomeAttribute('bwa')
 params.bowtie2_index = getGenomeAttribute('bowtie2')
 params.chromap_index = getGenomeAttribute('chromap')
 params.star_index    = getGenomeAttribute('star')
+params.bwamem2_index = getGenomeAttribute('bwamem2')
+params.bwamem3_index = getGenomeAttribute('bwamem3')
 params.gtf           = getGenomeAttribute('gtf')
 params.gff           = getGenomeAttribute('gff')
 params.gene_bed      = getGenomeAttribute('gene_bed')
@@ -70,6 +72,8 @@ workflow NFCORE_ATACSEQ {
         params.bowtie2_index,
         params.chromap_index,
         params.star_index,
+        params.bwamem2_index,
+        params.bwamem3_index,
         params.macs_gsize,
         params.read_length
     )
@@ -93,6 +97,8 @@ workflow NFCORE_ATACSEQ {
         PREPARE_GENOME.out.bowtie2_index,
         PREPARE_GENOME.out.chromap_index,
         PREPARE_GENOME.out.star_index,
+        PREPARE_GENOME.out.bwamem2_index,
+        PREPARE_GENOME.out.bwamem3_index,
         PREPARE_GENOME.out.autosomes,
         PREPARE_GENOME.out.macs_gsize,
         params.multiqc_config,

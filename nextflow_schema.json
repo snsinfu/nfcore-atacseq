@@ -137,6 +137,20 @@
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "Path to directory or tar.gz archive for pre-built STAR index."
                 },
+                "bwamem2_index": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "Path to directory or tar.gz archive for pre-built bwa-mem2 index."
+                },
+                "bwamem3_index": {
+                    "type": "string",
+                    "format": "path",
+                    "exists": true,
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "Path to directory or tar.gz archive for pre-built bwa-mem3 index."
+                },
                 "gene_bed": {
                     "type": "string",
                     "format": "file-path",
@@ -270,9 +284,9 @@
                 "aligner": {
                     "type": "string",
                     "default": "bwa",
-                    "description": "Specifies the alignment algorithm to use - available options are 'bwa', 'bowtie2', 'chromap' and 'star'.",
+                    "description": "Specifies the alignment algorithm to use - available options are 'bwa', 'bwa-mem2', 'bwa-mem3', 'bowtie2', 'chromap' and 'star'.",
                     "fa_icon": "fas fa-map-signs",
-                    "enum": ["bwa", "bowtie2", "chromap", "star"]
+                    "enum": ["bwa", "bwa-mem2", "bwa-mem3", "bowtie2", "chromap", "star"]
                 },
                 "keep_dups": {
                     "type": "boolean",

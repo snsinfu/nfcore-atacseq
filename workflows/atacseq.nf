@@ -19,6 +19,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_atacseq_pipeline'
 include { INPUT_CHECK            } from '../subworkflows/local/input_check'
 include { ALIGN_STAR             } from '../subworkflows/local/align_star'
+include { ALIGN_BWA              } from '../subworkflows/local/align_bwa'
 include { BAM_SHIFT_READS as MERGED_LIBRARY_BAM_SHIFT_READS                   } from '../subworkflows/local/bam_shift_reads'
 include { BAM_SHIFT_READS as MERGED_REPLICATE_BAM_SHIFT_READS                 } from '../subworkflows/local/bam_shift_reads'
 include { BIGWIG_PLOT_DEEPTOOLS as MERGED_LIBRARY_BIGWIG_PLOT_DEEPTOOLS       } from '../subworkflows/local/bigwig_plot_deeptools'
@@ -53,7 +54,6 @@ include { PICARD_MERGESAMFILES as PICARD_MERGESAMFILES_REPLICATE } from '../modu
 // SUBWORKFLOW: Consisting entirely of nf-core/modules
 //
 include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE } from '../subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main'
-include { FASTQ_ALIGN_BWA                  } from '../subworkflows/nf-core/fastq_align_bwa/main'
 include { FASTQ_ALIGN_BOWTIE2              } from '../subworkflows/nf-core/fastq_align_bowtie2/main'
 include { FASTQ_ALIGN_CHROMAP              } from '../subworkflows/nf-core/fastq_align_chromap/main'
 
@@ -81,6 +81,8 @@ workflow ATACSEQ {
     ch_bowtie2_index // channel: path(bowtie2/index)
     ch_chromap_index // channel: path(chromap.index)
     ch_star_index    // channel: path(star/index/)
+    ch_bwamem2_index // channel: path(bwamem2/index/)
+    ch_bwamem3_index // channel: path(bwamem3/index/)
     ch_autosomes     // channel: path(autosomes.txt)
     ch_macs_gsize    // channel: integer
     multiqc_config   // string: path to MultiQC config file or list of paths if multiple config files
@@ -160,27 +162,30 @@ workflow ATACSEQ {
     )
 
     //
-    // SUBWORKFLOW: Alignment with BWA & BAM QC
+    // SUBWORKFLOW: Alignment with BWA, BWA-MEM2 or BWA-MEM3 & BAM QC
     //
     ch_genome_bam        = channel.empty()
     ch_samtools_stats    = channel.empty()
     ch_samtools_flagstat = channel.empty()
     ch_samtools_idxstats = channel.empty()
-    if (params.aligner == 'bwa') {
-        FASTQ_ALIGN_BWA (
+    if (params.aligner == 'bwa' || params.aligner == 'bwa-mem2' || params.aligner == 'bwa-mem3') {
+        ALIGN_BWA (
             FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads,
-            ch_bwa_index,
-            false,
+            params.aligner == 'bwa'      ? ch_bwa_index :
+            params.aligner == 'bwa-mem2' ? ch_bwamem2_index :
+                                           ch_bwamem3_index,
             ch_fasta
                 .map { item ->
-                        [ [:], item ]
-                }
+                    [ [:], item ]
+                },
+            params.aligner,
+            false
         )
-        ch_genome_bam        = FASTQ_ALIGN_BWA.out.bam
-        ch_samtools_stats    = FASTQ_ALIGN_BWA.out.stats
-        ch_samtools_flagstat = FASTQ_ALIGN_BWA.out.flagstat
-        ch_samtools_idxstats = FASTQ_ALIGN_BWA.out.idxstats
-        ch_versions = ch_versions.mix(FASTQ_ALIGN_BWA.out.versions)
+        ch_genome_bam        = ALIGN_BWA.out.bam
+        ch_samtools_stats    = ALIGN_BWA.out.stats
+        ch_samtools_flagstat = ALIGN_BWA.out.flagstat
+        ch_samtools_idxstats = ALIGN_BWA.out.idxstats
+        ch_versions = ch_versions.mix(ALIGN_BWA.out.versions)
     }
 
     //
