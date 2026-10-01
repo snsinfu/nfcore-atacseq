@@ -398,7 +398,7 @@
                 },
                 "save_macs_pileup": {
                     "type": "boolean",
-                    "description": "Instruct MACS3 to create bedGraph files normalised to signal per million reads.",
+                    "description": "Instruct MACS3 to create bedGraph files normalised to signal per million reads, and convert these to bigWig.",
                     "fa_icon": "fas fa-save"
                 },
                 "skip_peak_qc": {

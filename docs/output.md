@@ -180,6 +180,8 @@ The results from deepTools plotProfile gives you a quick visualisation for the g
 - `<ALIGNER>/merged_library/macs3/<PEAK_TYPE>/`
   - `*.xls`, `*.broadPeak` or `*.narrowPeak`, `*.gappedPeak`, `*summits.bed`: MACS3 output files - the files generated will depend on whether MACS3 has been run in _narrowPeak_ or _broadPeak_ mode.
   - `*.annotatePeaks.txt`: HOMER peak-to-gene annotation file.
+  - `*.mLb.clN_treat_pileup.bdg`, `*.mLb.clN_control_lambda.bdg`: MACS3 SPMR signal tracks (treatment pileup and control lambda) in bedGraph format, only produced when `--save_macs_pileup` is set.
+  - `*.mLb.clN_treat_pileup.bigWig`, `*.mLb.clN_control_lambda.bigWig`: the same MACS3 SPMR signal tracks converted to bigWig, only produced when `--save_macs_pileup` is set.
 - `<ALIGNER>/merged_library/macs3/<PEAK_TYPE>/qc/`
   - `macs_peak.plots.pdf`: QC plots for MACS3 peaks.
   - `macs_annotatePeaks.plots.pdf`: QC plots for peak-to-gene feature annotation.
