@@ -50,6 +50,9 @@ include { ATAQV_MKARV as MERGED_LIBRARY_ATAQV_MKARV                             
 include { PICARD_MERGESAMFILES as PICARD_MERGESAMFILES_LIBRARY   } from '../modules/nf-core/picard/mergesamfiles/main'
 include { PICARD_MERGESAMFILES as PICARD_MERGESAMFILES_REPLICATE } from '../modules/nf-core/picard/mergesamfiles/main'
 
+include { UCSC_BEDGRAPHTOBIGWIG as MERGED_LIBRARY_MACS3_PILEUP_TO_BIGWIG   } from '../modules/nf-core/ucsc/bedgraphtobigwig/main'
+include { UCSC_BEDGRAPHTOBIGWIG as MERGED_REPLICATE_MACS3_PILEUP_TO_BIGWIG } from '../modules/nf-core/ucsc/bedgraphtobigwig/main'
+
 //
 // SUBWORKFLOW: Consisting entirely of nf-core/modules
 //
@@ -499,6 +502,22 @@ workflow ATACSEQ {
     ch_versions = ch_versions.mix(MERGED_LIBRARY_CALL_ANNOTATE_PEAKS.out.versions)
 
     //
+    // MODULE: Convert MACS3 SPMR pileup bedGraph tracks (treat + control) to bigWig
+    //
+    if (params.save_macs_pileup) {
+        MERGED_LIBRARY_MACS3_PILEUP_TO_BIGWIG (
+            MERGED_LIBRARY_CALL_ANNOTATE_PEAKS.out.bedgraph
+                .flatMap { meta, bdgs ->
+                    (bdgs instanceof List ? bdgs : [bdgs]).collect { bdg ->
+                        [ meta + [id: bdg.baseName], bdg ]
+                    }
+                },
+            ch_chrom_sizes
+        )
+        ch_versions = ch_versions.mix(MERGED_LIBRARY_MACS3_PILEUP_TO_BIGWIG.out.versions)
+    }
+
+    //
     // SUBWORKFLOW: Consensus peaks analysis
     //
     ch_macs3_consensus_library_bed       = channel.empty()
@@ -750,6 +769,22 @@ workflow ATACSEQ {
         ch_macs3_peak_count_replicate_multiqc               = MERGED_REPLICATE_CALL_ANNOTATE_PEAKS.out.peak_count_multiqc
         ch_macs3_plot_homer_annotatepeaks_replicate_multiqc = MERGED_REPLICATE_CALL_ANNOTATE_PEAKS.out.plot_homer_annotatepeaks_tsv
         ch_versions = ch_versions.mix(MERGED_REPLICATE_CALL_ANNOTATE_PEAKS.out.versions)
+
+        //
+        // MODULE: Convert MACS3 SPMR pileup bedGraph tracks (treat + control) to bigWig
+        //
+        if (params.save_macs_pileup) {
+            MERGED_REPLICATE_MACS3_PILEUP_TO_BIGWIG (
+                MERGED_REPLICATE_CALL_ANNOTATE_PEAKS.out.bedgraph
+                    .flatMap { meta, bdgs ->
+                        (bdgs instanceof List ? bdgs : [bdgs]).collect { bdg ->
+                            [ meta + [id: bdg.baseName], bdg ]
+                        }
+                    },
+                ch_chrom_sizes
+            )
+            ch_versions = ch_versions.mix(MERGED_REPLICATE_MACS3_PILEUP_TO_BIGWIG.out.versions)
+        }
 
         //
         // SUBWORKFLOW: Consensus peaks analysis
