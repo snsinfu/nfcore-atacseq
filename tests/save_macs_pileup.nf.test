@@ -1,0 +1,35 @@
+nextflow_pipeline {
+
+    name "Test MACS3 SPMR pileup bedGraph to bigWig conversion"
+    script "../main.nf"
+    tag "save_macs_pileup"
+
+    test("save_macs_pileup_bigwig") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                save_macs_pileup = true
+            }
+        }
+
+        then {
+            def lib_files = getAllFilesFromDir("$outputDir/bwa/merged_library/macs3", relative: true)
+            def rep_files = getAllFilesFromDir("$outputDir/bwa/merged_replicate/macs3", relative: true)
+
+            assertAll(
+                { assert workflow.success },
+                // bedGraph tracks are still published
+                { assert lib_files.any { it.toString().endsWith('_treat_pileup.bdg') } },
+                { assert lib_files.any { it.toString().endsWith('_control_lambda.bdg') } },
+                { assert rep_files.any { it.toString().endsWith('_treat_pileup.bdg') } },
+                { assert rep_files.any { it.toString().endsWith('_control_lambda.bdg') } },
+                // new bigWig tracks
+                { assert lib_files.any { it.toString().endsWith('_treat_pileup.bigWig') } },
+                { assert lib_files.any { it.toString().endsWith('_control_lambda.bigWig') } },
+                { assert rep_files.any { it.toString().endsWith('_treat_pileup.bigWig') } },
+                { assert rep_files.any { it.toString().endsWith('_control_lambda.bigWig') } }
+            )
+        }
+    }
+}
