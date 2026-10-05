@@ -36,9 +36,9 @@
                 },
                 "read_length": {
                     "type": "integer",
-                    "description": "Read length used to calculate or retrieve pre-computed MACS3 genome size for peak calling if `--macs_gsize` isn't provided.",
+                    "description": "Read length used to calculate or retrieve pre-computed MACS3 genome size for peak calling if `--macs_gsize` isn't provided. Inferred from the FASTQ when unset.",
                     "fa_icon": "fas fa-chart-area",
-                    "help_text": "Read length together with the genome fasta are used to calculate MACS3 genome size using the `khmer` program as explained [here](https://deeptools.readthedocs.io/en/develop/content/feature/effectiveGenomeSize.html#effective-genome-size). For all the genomes present in the `igenomes.config` the genome size has been already precomputed and the read length is then used to retrieve the corresponding value",
+                    "help_text": "Read length together with the genome fasta are used to calculate MACS3 genome size using the `khmer` program as explained [here](https://deeptools.readthedocs.io/en/develop/content/feature/effectiveGenomeSize.html#effective-genome-size). For all the genomes present in the `igenomes.config` the genome size has been already precomputed and the read length is then used to retrieve the corresponding value. If this parameter is not provided, the read length is inferred from the first FASTQ in the samplesheet.",
                     "enum": [50, 75, 100, 150, 200]
                 },
                 "with_control": {
@@ -172,7 +172,7 @@
                 "macs_gsize": {
                     "type": "number",
                     "description": "Effective genome size parameter required by MACS3.",
-                    "help_text": "[Effective genome size](https://github.com/taoliu/MACS#-g--gsize) parameter required by MACS3. If using an iGenomes reference these have been provided when `--genome` is set as *GRCh37*, *GRCh38*, *GRCm38*, *WBcel235*, *BDGP6*, *R64-1-1*, *EF2*, *hg38*, *hg19* and *mm10*. For other genomes, if this parameter is not specified then the MACS3 peak-calling and differential analysis will be skipped.",
+                    "help_text": "[Effective genome size](https://github.com/taoliu/MACS#-g--gsize) parameter required by MACS3. If using an iGenomes reference these have been provided when `--genome` is set as *GRCh37*, *GRCh38*, *GRCm38*, *WBcel235*, *BDGP6*, *R64-1-1*, *EF2*, *hg38*, *hg19* and *mm10*. For other genomes, if this parameter is not specified it will be calculated with `khmer` using the `--read_length`. When `--read_length` is not provided either, the read length is inferred from the FASTQ before the genome size is resolved.",
                     "fa_icon": "fas fa-arrows-alt-h"
                 },
                 "blacklist": {

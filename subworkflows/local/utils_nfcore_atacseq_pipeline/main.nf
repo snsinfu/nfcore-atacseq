@@ -176,10 +176,6 @@ def validateInputParameters() {
     if (!params.macs_gsize) {
         macsGsizeWarn(log)
     }
-
-    if (!params.read_length && !params.macs_gsize) {
-        error ("Both '--read_length' and '--macs_gsize' not specified! Please specify either to infer MACS3 genome size for peak calling.")
-    }
 }
 
 //
@@ -275,7 +271,10 @@ def gtfGffWarn(log) {
 def macsGsizeWarn(log) {
     log.warn "=============================================================================\n" +
         "  --macs_gsize parameter has not been provided.\n" +
-        "  It will be auto-calculated by 'khmer unique-kmers.py' using the '--read_length' parameter.\n" +
+        "  The read length is taken from '--read_length' when set, otherwise inferred\n" +
+        "  from the FASTQ reads. MACS3 genome size is then taken from the iGenomes\n" +
+        "  catalog when the read length matches a precomputed key, or calculated by\n" +
+        "  'khmer unique-kmers.py' otherwise.\n" +
         "  Explicitly provide '--macs_gsize macs3_genome_size' to change this behaviour.\n" +
         "==================================================================================="
 }

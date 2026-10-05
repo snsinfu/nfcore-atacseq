@@ -73,9 +73,7 @@ workflow NFCORE_ATACSEQ {
         params.chromap_index,
         params.star_index,
         params.bwamem2_index,
-        params.bwamem3_index,
-        params.macs_gsize,
-        params.read_length
+        params.bwamem3_index
     )
     ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
@@ -100,7 +98,6 @@ workflow NFCORE_ATACSEQ {
         PREPARE_GENOME.out.bwamem2_index,
         PREPARE_GENOME.out.bwamem3_index,
         PREPARE_GENOME.out.autosomes,
-        PREPARE_GENOME.out.macs_gsize,
         params.multiqc_config,
         params.multiqc_logo,
         params.multiqc_methods_description,

@@ -25,7 +25,6 @@ include { BOWTIE2_BUILD        } from '../../modules/nf-core/bowtie2/build/main'
 include { CHROMAP_INDEX        } from '../../modules/nf-core/chromap/index/main'
 include { BWAMEM2_INDEX        } from '../../modules/local/bwamem2_index'
 include { BWAMEM3_INDEX        } from '../../modules/local/bwamem3_index'
-include { KHMER_UNIQUEKMERS    } from '../../modules/nf-core/khmer/uniquekmers/main'
 
 include { STAR_GENOMEGENERATE      } from '../../modules/local/star_genomegenerate'
 include { GTF2BED                  } from '../../modules/local/gtf2bed'
@@ -52,8 +51,6 @@ workflow PREPARE_GENOME {
     star_index         //    file: /path/to/star/index/
     bwamem2_index      //    file: /path/to/bwamem2/index/
     bwamem3_index      //    file: /path/to/bwamem3/index/
-    macs_gsize         // integer: MACS3 genome size
-    read_length        // integer: read length
 
     main:
     ch_versions = channel.empty()
@@ -279,19 +276,6 @@ workflow PREPARE_GENOME {
         }
     }
 
-    //
-    // Estimate MACS3 genome size
-    //
-    ch_macs_gsize = macs_gsize
-    if (!macs_gsize) {
-        KHMER_UNIQUEKMERS (
-            ch_fasta,
-            read_length
-        )
-        ch_macs_gsize = KHMER_UNIQUEKMERS.out.kmers.map { item -> item.text.trim() }
-        ch_versions   = ch_versions.mix(KHMER_UNIQUEKMERS.out.versions)
-    }
-
     emit:
     fasta         = ch_fasta                      //    path: genome.fasta
     fai           = ch_fai                        //    path: genome.fai
@@ -307,6 +291,5 @@ workflow PREPARE_GENOME {
     bwamem2_index = ch_bwamem2_index              //    path: bwamem2/index/
     bwamem3_index = ch_bwamem3_index              //    path: bwamem3/index/
     autosomes     = ch_genome_autosomes           //    path: *.autosomes.txt
-    macs_gsize    = ch_macs_gsize                 // integer: MACS3 genome size
     versions      = ch_versions.ifEmpty(null)     // channel: [ versions.yml ]
 }
