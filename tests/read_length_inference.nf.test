@@ -1,0 +1,105 @@
+nextflow_pipeline {
+
+    name "Test read length inference from FASTQ"
+    script "../main.nf"
+    tag "read_length"
+
+    test("read_length_inferred_from_fastq") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                read_length = null
+            }
+        }
+
+        then {
+            def rl_files = getAllFilesFromDir("$outputDir/pipeline_info", relative: true)
+                .findAll { it.toString().endsWith('.read_length.txt') }
+            // The test profile reads (SRR1822153..) are 76 bp. If inference had not
+            // fed khmer a valid kmer size the pipeline would have failed with '-k null'.
+            def inferred_length = rl_files.size() == 1 ?
+                path("$outputDir/pipeline_info/${rl_files[0]}").text.trim() : ''
+            def lib_peaks = getAllFilesFromDir("$outputDir/bwa/merged_library/macs3/broad_peak", relative: true)
+                .findAll { it.toString().endsWith('_peaks.xls') }
+            def rep_peaks = getAllFilesFromDir("$outputDir/bwa/merged_replicate/macs3/broad_peak", relative: true)
+                .findAll { it.toString().endsWith('_peaks.xls') }
+
+            assertAll(
+                { assert workflow.success },
+                { assert rl_files.size() == 1 },
+                { assert inferred_length ==~ /\d+/ },
+                { assert inferred_length as Integer == 76 },
+                // The inferred gsize must reach every MACS3 task, not just the first.
+                { assert lib_peaks.size() == 6 },
+                { assert rep_peaks.size() == 2 }
+            )
+        }
+    }
+
+    test("read_length_inferred_exact_match_catalog_gsize") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                read_length = null
+                genome = 'testcat'
+                genomes = [
+                    testcat: [
+                        fasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/atacseq/reference/genome.fa',
+                        gtf:   'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/atacseq/reference/genes.gtf',
+                        macs_gsize: [ "76": 2684219875 ]
+                    ]
+                ]
+            }
+        }
+
+        then {
+            def peak_dir = "$outputDir/bwa/merged_library/macs3/broad_peak"
+            def lib_peaks = getAllFilesFromDir(peak_dir, relative: true)
+                .findAll { it.toString().endsWith('_peaks.xls') }
+            // The catalog gsize must reach every MACS3 task, not just the first one.
+            def gsizes = lib_peaks.collect { f ->
+                def m = (path("${peak_dir}/${f}").text =~ /--gsize (\d+)/)
+                m.find() ? m.group(1) : null
+            }.unique()
+
+            assertAll(
+                { assert workflow.success },
+                { assert lib_peaks.size() == 6 },
+                { assert gsizes == ['2684219875'] }
+            )
+        }
+    }
+
+    test("read_length_inferred_catalog_miss_uses_khmer") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                read_length = null
+                genome = 'testcat'
+                genomes = [
+                    testcat: [
+                        fasta: 'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/atacseq/reference/genome.fa',
+                        gtf:   'https://raw.githubusercontent.com/nf-core/test-datasets/refs/heads/atacseq/reference/genes.gtf',
+                        macs_gsize: [ "50": 2684219875 ]
+                    ]
+                ]
+            }
+        }
+
+        then {
+            def lib_peaks = getAllFilesFromDir("$outputDir/bwa/merged_library/macs3/broad_peak", relative: true)
+                .findAll { it.toString().endsWith('_peaks.xls') }
+            def rep_peaks = getAllFilesFromDir("$outputDir/bwa/merged_replicate/macs3/broad_peak", relative: true)
+                .findAll { it.toString().endsWith('_peaks.xls') }
+
+            assertAll(
+                { assert workflow.success },
+                { assert lib_peaks.size() == 6 },
+                { assert rep_peaks.size() == 2 }
+            )
+        }
+    }
+}
