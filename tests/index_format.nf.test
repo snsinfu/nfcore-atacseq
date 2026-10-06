@@ -1,0 +1,36 @@
+nextflow_pipeline {
+
+    name "Test CSI index format"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("--bam_index_format csi") {
+
+        when {
+            params {
+                outdir           = "$outputDir"
+                bam_index_format = 'csi'
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+
+                // PE merged-library path (published by the modules.config:448 selector)
+                { assert file("$outputDir/bwa/merged_library/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.sorted.bam.csi").exists() },
+                { assert !file("$outputDir/bwa/merged_library/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.sorted.bam.bai").exists() },
+
+                // SE merged-library path (already-csi selector)
+                { assert file("$outputDir/bwa/merged_library/OSMOTIC_STRESS_T100_SE_REP1.mLb.clN.sorted.bam.csi").exists() },
+
+                // merged-replicate path
+                { assert file("$outputDir/bwa/merged_replicate/OSMOTIC_STRESS_T0_PE.mRp.clN.sorted.bam.csi").exists() },
+
+                // Downstream analysis and QC still run from CSI-indexed BAMs
+                { assert file("$outputDir/bwa/merged_library/bigwig/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.bigWig").exists() },
+                { assert file("$outputDir/bwa/merged_library/samtools_stats/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.sorted.bam.stats").exists() }
+            )
+        }
+    }
+}

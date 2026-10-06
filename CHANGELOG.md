@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added [`BWA-MEM2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA-MEM3`](https://github.com/fg-labs/bwa-mem3) as selectable aligners via `--aligner bwa-mem2` / `--aligner bwa-mem3`. Both use their own index format (`.0123`, `.bwt.2bit.64`), so a pre-built index can be supplied with `--bwamem2_index` / `--bwamem3_index` or built automatically from the FASTA. All BWA alignment modes (`bwa`, `bwa-mem2` and `bwa-mem3`) now run through a single `ALIGN_BWA` subworkflow, so results and output naming are consistent whichever aligner is selected. Inputs, outputs and the output directory layout are unchanged; for workflow-code users, the `FASTQ_ALIGN_BWA` subworkflow (and the nf-core `fastq_align_bwa` component) is replaced by `ALIGN_BWA`, which takes the aligner name as an input.
 - `--save_macs_pileup` now also publishes bigWig versions of the MACS3 `--bdg --SPMR` signal tracks (`*_treat_pileup.bigWig`, `*_control_lambda.bigWig`) alongside the existing bedGraph files, in both the merged-library and merged-replicate peak directories.
 - `--read_length` is no longer mandatory when `--macs_gsize` is not provided. The read length is inferred from the first FASTQ by a new local `FASTQ_READ_LENGTH` module; MACS3 effective genome size is then taken from the iGenomes catalog when the read length exactly matches a precomputed key, otherwise estimated with `khmer`.
+- Added `--bam_index_format` (`bai` default, or `csi`) to support references with a contig >= 512 Mbp (2^29 bp), which the BAI format cannot address. The pipeline stops early if `bai` is requested for such a genome.
 
 ### Parameters
 
@@ -45,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 |               | `--skip_merged_replicate_bigwig` |
 |               | `--bwamem2_index`                |
 |               | `--bwamem3_index`                |
+|               | `--bam_index_format`             |
 
 > **NB:** Parameter has been **updated** if both old and new parameter information is present.
 > **NB:** Parameter has been **added** if just the new parameter information is present.
