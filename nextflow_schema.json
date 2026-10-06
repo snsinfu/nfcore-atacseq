@@ -288,6 +288,13 @@
                     "fa_icon": "fas fa-map-signs",
                     "enum": ["bwa", "bwa-mem2", "bwa-mem3", "bowtie2", "chromap", "star"]
                 },
+                "bam_index_format": {
+                    "type": "string",
+                    "default": "bai",
+                    "enum": ["bai", "csi"],
+                    "description": "BAM index format. Use 'csi' for assemblies with a contig >= 512 Mbp (2^29 bp), which the BAI format cannot address. The pipeline stops early if 'bai' is requested for such a genome.",
+                    "fa_icon": "fas fa-sort-numeric-down"
+                },
                 "keep_dups": {
                     "type": "boolean",
                     "description": "Duplicate reads are not filtered from alignments.",
