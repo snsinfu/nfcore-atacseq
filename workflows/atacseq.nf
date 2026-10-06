@@ -17,7 +17,7 @@ include { FASTQ_READ_LENGTH  } from '../modules/local/fastq_read_length'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_atacseq_pipeline'
+include { methodsDescriptionText; maxContigLength; validateIndexFormat } from '../subworkflows/local/utils_nfcore_atacseq_pipeline'
 include { INPUT_CHECK            } from '../subworkflows/local/input_check'
 include { ALIGN_STAR             } from '../subworkflows/local/align_star'
 include { ALIGN_BWA              } from '../subworkflows/local/align_bwa'
@@ -119,6 +119,13 @@ workflow ATACSEQ {
     if (!params.ataqv_mito_reference && params.mito_name) {
         ataqv_mito_reference = params.mito_name
     }
+
+    //
+    // Fail early if the BAI index format was requested for a genome with a contig >= 512 Mbp.
+    //
+    ch_fai
+        .map { fai -> validateIndexFormat(maxContigLength(fai), params.bam_index_format) }
+        .subscribe { }
 
     def ch_versions      = channel.empty()
     def ch_multiqc_files = channel.empty()
