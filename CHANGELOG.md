@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--save_macs_pileup` now also publishes bigWig versions of the MACS3 `--bdg --SPMR` signal tracks (`*_treat_pileup.bigWig`, `*_control_lambda.bigWig`) alongside the existing bedGraph files, in both the merged-library and merged-replicate peak directories.
 - `--read_length` is no longer mandatory when `--macs_gsize` is not provided. The read length is inferred from the first FASTQ by a new local `FASTQ_READ_LENGTH` module; MACS3 effective genome size is then taken from the iGenomes catalog when the read length exactly matches a precomputed key, otherwise estimated with `khmer`.
 - Added `--bam_index_format` (`bai` default, or `csi`) to support references with a contig >= 512 Mbp (2^29 bp), which the BAI format cannot address. The pipeline stops early if `bai` is requested for such a genome.
+- Fix parameters supplied via a launch-directory `nextflow.config` (including its `profiles`) or a `-c` config being silently ignored by `conf/modules.config`. `ext.args` that reference `params` are now evaluated lazily as closures, and `publishDir` `enabled: params.*` gates were replaced with lazy `saveAs` checks. This affects `DEEPTOOLS_ALIGNMENTSIEVE` fragment-length options, MACS3 options, `--multiqc_title`, and publishing of `shifted_reads/`, `--save_reference`, `--save_trimmed`, `--save_align_intermeds` and `--save_unaligned` outputs.
 
 ### Parameters
 
