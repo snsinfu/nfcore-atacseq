@@ -19,7 +19,8 @@ workflow BAM_BEDGRAPH_BIGWIG_BEDTOOLS_UCSC {
     // Create bedGraph coverage track
     //
     BEDTOOLS_GENOMECOV (
-        ch_bam_flagstat
+        ch_bam_flagstat,
+        ch_chrom_sizes
     )
     ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions.first())
 
