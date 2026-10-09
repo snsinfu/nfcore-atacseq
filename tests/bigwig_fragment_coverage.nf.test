@@ -1,0 +1,45 @@
+nextflow_pipeline {
+
+    name "Test short paired-end fragment coverage"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("--shift_reads with maxFragmentLength 120") {
+
+        // Fragments shorter than the read length are common in ATAC-seq
+        // (nucleosome-free regions). After --ATACshift the reverse mate starts
+        // upstream of the forward mate for these pairs, which `bedtools
+        // genomecov -pc` silently drops. This test guards against the published
+        // bigWig collapsing to an (almost) empty track.
+        when {
+            params {
+                outdir                = "$outputDir"
+                input                 = "$projectDir/tests/data/samplesheet_pe_only.csv"
+                shift_reads           = true
+                minFragmentLength     = 0
+                maxFragmentLength     = 120
+                skip_preseq           = true
+                skip_picard_metrics   = true
+                skip_ataqv            = true
+                skip_igv              = true
+                skip_multiqc          = true
+                skip_plot_profile     = true
+                skip_plot_fingerprint = true
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert file("$outputDir/bwa/merged_library/bigwig/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.bigWig").exists() },
+                // Snapshot the size so a regression to the dropped-coverage
+                // behaviour (near-empty bigWig) is detected.
+                {
+                    assert snapshot(
+                        file("$outputDir/bwa/merged_library/bigwig/OSMOTIC_STRESS_T0_PE_REP1.mLb.clN.bigWig").length()
+                    ).match()
+                }
+            )
+        }
+    }
+}
