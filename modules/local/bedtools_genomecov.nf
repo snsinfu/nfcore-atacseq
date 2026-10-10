@@ -2,10 +2,10 @@ process BEDTOOLS_GENOMECOV {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::bedtools=2.30.0 bioconda::samtools=1.15.1 conda-forge::coreutils=9.5"
+    conda "bioconda::bedtools=2.31.0 bioconda::samtools=1.17 conda-forge::coreutils=9.3 conda-forge::gawk=5.1.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-8186960447c5cb2faa697666dc1e6d919ad23f3e:3127fcae6b6bdaf8181e21a26ae61231030a9fcb-0':
-        'biocontainers/mulled-v2-8186960447c5cb2faa697666dc1e6d919ad23f3e:3127fcae6b6bdaf8181e21a26ae61231030a9fcb-0' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-9d3a458f6420e5712103ae2af82c94d26d63f059:60b54b43045e8cf39ba307fd683c69d4c57240ce-0':
+        'biocontainers/mulled-v2-9d3a458f6420e5712103ae2af82c94d26d63f059:60b54b43045e8cf39ba307fd683c69d4c57240ce-0' }"
 
     input:
     tuple val(meta), path(bam), path(flagstat)
